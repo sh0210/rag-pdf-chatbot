@@ -39,7 +39,7 @@ document.getElementById("ask-btn").addEventListener("click", async () => {
         return;
     }
 
-    answerEl.innerText = "Searching...";
+    answerEl.innerText = "Thinking...";
 
     try {
         const response = await fetch("/ask", {
@@ -50,11 +50,7 @@ document.getElementById("ask-btn").addEventListener("click", async () => {
         const data = await response.json();
 
         if (response.ok) {
-            let debugText = "Retrieved chunks (debug view — Gemini answer comes in Stage 8-9):\n\n";
-            data.retrieved_chunks.forEach((chunk, i) => {
-                debugText += `[${i + 1}] (distance: ${chunk.distance.toFixed(3)})\n${chunk.text.slice(0, 150)}...\n\n`;
-            });
-            answerEl.innerText = debugText;
+            answerEl.innerText = data.answer;
         } else {
             answerEl.innerText = `Error: ${data.error}`;
         }

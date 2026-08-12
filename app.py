@@ -3,6 +3,7 @@ from utils.pdf_processor import extract_text_from_pdf
 from utils.chunker import chunk_text
 from utils.embeddings import get_embeddings_for_chunks, get_embedding
 from utils.vector_store import VectorStore
+from utils.gemini_client import generate_answer
 
 app = Flask(__name__)
 
@@ -75,9 +76,11 @@ def ask():
 
     retrieved_chunks = vector_store.search(query_embedding, top_k=3)
 
-    # For now, just return retrieved chunks — Gemini answer generation comes in Stage 8-9
+    answer = generate_answer(question, retrieved_chunks)
+
     return jsonify({
         "question": question,
+        "answer": answer,
         "retrieved_chunks": retrieved_chunks
     })
 
