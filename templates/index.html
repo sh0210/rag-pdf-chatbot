@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RAG PDF Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>RAG PDF Chatbot</h1>
+
+    <div class="upload-section">
+        <h3>1. Upload a PDF</h3>
+        <input type="file" id="pdf-file" accept=".pdf">
+        <button id="upload-btn">Upload</button>
+        <p id="upload-status"></p>
+    </div>
+
+    <div class="question-section">
+        <h3>2. Ask a question</h3>
+        <input type="text" id="question-input" placeholder="Ask something about the PDF...">
+        <button id="ask-btn">Ask</button>
+    </div>
+
+    <div class="answer-section">
+        <h3>Answer</h3>
+        <p id="answer-output">Answer will appear here.</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
