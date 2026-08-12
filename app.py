@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from utils.pdf_processor import extract_text_from_pdf
+from utils.chunker import chunk_text
 
 app = Flask(__name__)
 
@@ -25,11 +26,14 @@ def upload():
     if not text:
         return jsonify({"error": "Could not extract text (empty or invalid PDF)"}), 400
 
-    # For now, just confirm it worked — we'll store this properly in later stages
+    chunks = chunk_text(text)
+
     return jsonify({
         "message": "PDF processed successfully",
         "char_count": len(text),
-        "preview": text[:300]
+        "num_chunks": len(chunks),
+        "first_chunk_preview": chunks[0][:200] if chunks else "",
+        "second_chunk_preview": chunks[1][:200] if len(chunks) > 1 else ""
     })
 
 if __name__ == "__main__":

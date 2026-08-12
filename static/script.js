@@ -18,12 +18,13 @@ document.getElementById("upload-btn").addEventListener("click", async () => {
             body: formData
         });
         const data = await response.json();
+        console.log(data);
 
         if (response.ok) {
-            statusEl.innerText = `Success: extracted ${data.char_count} characters. Preview: "${data.preview.slice(0, 100)}..."`;
-        } else {
-            statusEl.innerText = `Error: ${data.error}`;
-        }
+    statusEl.innerText = `Extracted ${data.char_count} chars, split into ${data.num_chunks} chunks. Chunk 1: "${data.first_chunk_preview}"`;
+} else {
+    statusEl.innerText = `Error: ${data.error}`;
+}
     } catch (err) {
         statusEl.innerText = "Upload failed. Check console.";
         console.error(err);
