@@ -1,12 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 from utils.pdf_processor import extract_text_from_pdf
 from utils.chunker import chunk_text
-from utils.embeddings import get_embeddings_for_chunks
+from utils.embeddings import get_embeddings_for_chunks, get_embedding
 from utils.vector_store import VectorStore
 
 app = Flask(__name__)
 
-# Global in-memory vector store (single document at a time, for now)
 vector_store = None
 
 @app.route("/")
@@ -56,29 +55,31 @@ def upload():
     })
 
 
-@app.route("/test-search", methods=["POST"])
-def test_search():
-    """Temporary debug route to test FAISS search — will be replaced in Stage 7."""
+@app.route("/ask", methods=["POST"])
+def ask():
     global vector_store
 
     if vector_store is None:
-        return jsonify({"error": "No document uploaded yet"}), 400
+        return jsonify({"error": "Please upload a PDF first"}), 400
 
     data = request.get_json()
-    query_text = data.get("query", "")
+    question = data.get("question", "").strip()
 
-    if not query_text.strip():
-        return jsonify({"error": "Empty query"}), 400
+    if not question:
+        return jsonify({"error": "Question cannot be empty"}), 400
 
-    from utils.embeddings import get_embedding
-    query_embedding = get_embedding(query_text)
+    query_embedding = get_embedding(question)
 
     if query_embedding is None:
-        return jsonify({"error": "Failed to embed query"}), 500
+        return jsonify({"error": "Failed to process your question"}), 500
 
-    results = vector_store.search(query_embedding, top_k=3)
+    retrieved_chunks = vector_store.search(query_embedding, top_k=3)
 
-    return jsonify({"results": results})
+    # For now, just return retrieved chunks — Gemini answer generation comes in Stage 8-9
+    return jsonify({
+        "question": question,
+        "retrieved_chunks": retrieved_chunks
+    })
 
 
 if __name__ == "__main__":
