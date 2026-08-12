@@ -3,21 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title>RAG PDF Chatbot</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>RAG PDF Chatbot</h1>
+    <div class="app-header">
+        <div class="app-title">🤖 RAG PDF Chatbot</div>
+        <div class="app-subtitle">Ask questions, get answers grounded in your document</div>
+    </div>
 
     <div class="upload-section">
-        <h3>1. Upload a PDF</h3>
-        <input type="file" id="pdf-file" accept=".pdf">
-        <button id="upload-btn">Upload</button>
+        <h3>📄 Upload a document</h3>
+        <div class="upload-row">
+            <input type="file" id="pdf-file" accept=".pdf">
+            <button id="upload-btn">Upload</button>
+        </div>
         <p id="upload-status"></p>
+        <p id="current-file" class="current-file"></p>
     </div>
 
     <div class="chat-section">
         <div class="chat-header">
-            <h3>2. Chat about the document</h3>
+            <h3>💬 Chat</h3>
             <button id="clear-btn">Clear chat</button>
         </div>
         <div id="chat-history"></div>
