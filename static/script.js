@@ -1,5 +1,33 @@
-document.getElementById("upload-btn").addEventListener("click", () => {
-    document.getElementById("upload-status").innerText = "Upload logic coming in Stage 3.";
+document.getElementById("upload-btn").addEventListener("click", async () => {
+    const fileInput = document.getElementById("pdf-file");
+    const statusEl = document.getElementById("upload-status");
+
+    if (fileInput.files.length === 0) {
+        statusEl.innerText = "Please select a PDF first.";
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("pdf_file", fileInput.files[0]);
+
+    statusEl.innerText = "Uploading...";
+
+    try {
+        const response = await fetch("/upload", {
+            method: "POST",
+            body: formData
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            statusEl.innerText = `Success: extracted ${data.char_count} characters. Preview: "${data.preview.slice(0, 100)}..."`;
+        } else {
+            statusEl.innerText = `Error: ${data.error}`;
+        }
+    } catch (err) {
+        statusEl.innerText = "Upload failed. Check console.";
+        console.error(err);
+    }
 });
 
 document.getElementById("ask-btn").addEventListener("click", () => {
