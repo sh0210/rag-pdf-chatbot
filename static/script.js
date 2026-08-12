@@ -1,22 +1,76 @@
 const chatHistory = document.getElementById("chat-history");
+let sourceCounter = 0;
 
-function addMessage(question, answer, isError = false) {
-    const msgEl = document.createElement("div");
-    msgEl.className = "chat-message";
+function addUserMessage(question) {
+    const row = document.createElement("div");
+    row.className = "bubble-row user";
 
-    const qEl = document.createElement("div");
-    qEl.className = "chat-question";
-    qEl.innerText = `You: ${question}`;
+    const bubble = document.createElement("div");
+    bubble.className = "bubble user";
+    bubble.innerText = question;
 
-    const aEl = document.createElement("div");
-    aEl.className = isError ? "chat-answer chat-error" : "chat-answer";
-    aEl.innerText = answer;
-
-    msgEl.appendChild(qEl);
-    msgEl.appendChild(aEl);
-    chatHistory.appendChild(msgEl);
-
+    row.appendChild(bubble);
+    chatHistory.appendChild(row);
     chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function addBotMessage(answer, sources = [], isError = false) {
+    const row = document.createElement("div");
+    row.className = "bubble-row bot";
+
+    const bubble = document.createElement("div");
+    bubble.className = isError ? "bubble bot error" : "bubble bot";
+    bubble.innerText = answer;
+    row.appendChild(bubble);
+
+    if (sources && sources.length > 0) {
+        sourceCounter++;
+        const toggleId = `sources-${sourceCounter}`;
+
+        const toggle = document.createElement("div");
+        toggle.className = "sources-toggle";
+        toggle.innerText = `View ${sources.length} source excerpt(s) used`;
+
+        const box = document.createElement("div");
+        box.className = "sources-box";
+        box.id = toggleId;
+
+        sources.forEach((src, i) => {
+            const item = document.createElement("div");
+            item.className = "source-item";
+            item.innerHTML = `<span class="source-distance">Excerpt ${i + 1} (distance: ${src.distance.toFixed(3)})</span><br>${src.text.slice(0, 200)}...`;
+            box.appendChild(item);
+        });
+
+        toggle.addEventListener("click", () => {
+            box.classList.toggle("open");
+        });
+
+        row.appendChild(toggle);
+        row.appendChild(box);
+    }
+
+    chatHistory.appendChild(row);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function addLoadingBubble() {
+    const row = document.createElement("div");
+    row.className = "bubble-row bot";
+    row.id = "loading-row";
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble bot loading";
+    bubble.innerText = "Thinking...";
+
+    row.appendChild(bubble);
+    chatHistory.appendChild(row);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function removeLoadingBubble() {
+    const row = document.getElementById("loading-row");
+    if (row) row.remove();
 }
 
 document.getElementById("upload-btn").addEventListener("click", async () => {
@@ -60,12 +114,8 @@ async function askQuestion() {
     }
 
     input.value = "";
-
-    const loadingEl = document.createElement("div");
-    loadingEl.className = "chat-loading";
-    loadingEl.innerText = "Thinking...";
-    chatHistory.appendChild(loadingEl);
-    chatHistory.scrollTop = chatHistory.scrollHeight;
+    addUserMessage(question);
+    addLoadingBubble();
 
     try {
         const response = await fetch("/ask", {
@@ -75,16 +125,16 @@ async function askQuestion() {
         });
         const data = await response.json();
 
-        loadingEl.remove();
+        removeLoadingBubble();
 
         if (response.ok) {
-            addMessage(question, data.answer);
+            addBotMessage(data.answer, data.retrieved_chunks);
         } else {
-            addMessage(question, `Error: ${data.error}`, true);
+            addBotMessage(`Error: ${data.error}`, [], true);
         }
     } catch (err) {
-        loadingEl.remove();
-        addMessage(question, "Something went wrong. Check console.", true);
+        removeLoadingBubble();
+        addBotMessage("Something went wrong. Check console.", [], true);
         console.error(err);
     }
 }
@@ -97,6 +147,12 @@ document.getElementById("question-input").addEventListener("keydown", (e) => {
     }
 });
 
-document.getElementById("clear-btn").addEventListener("click", () => {
+document.getElementById("clear-btn").addEventListener("click", async () => {
     chatHistory.innerHTML = "";
+    sourceCounter = 0;
+    try {
+        await fetch("/clear-chat", { method: "POST" });
+    } catch (err) {
+        console.error("Failed to clear server-side history:", err);
+    }
 });

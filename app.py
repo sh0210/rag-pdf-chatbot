@@ -8,6 +8,7 @@ from utils.gemini_client import generate_answer
 app = Flask(__name__)
 
 vector_store = None
+chat_history = []  # list of {"question": ..., "answer": ...}
 
 @app.route("/")
 def home():
@@ -15,7 +16,7 @@ def home():
 
 @app.route("/upload", methods=["POST"])
 def upload():
-    global vector_store
+    global vector_store, chat_history
 
     if "pdf_file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
@@ -46,6 +47,7 @@ def upload():
     dimension = len(embedded_chunks[0][1])
     vector_store = VectorStore(dimension)
     vector_store.add_chunks(embedded_chunks)
+    chat_history = []  # reset conversation when a new document is uploaded
 
     return jsonify({
         "message": "PDF processed, embedded, and stored successfully",
@@ -58,7 +60,7 @@ def upload():
 
 @app.route("/ask", methods=["POST"])
 def ask():
-    global vector_store
+    global vector_store, chat_history
 
     if vector_store is None:
         return jsonify({"error": "Please upload a PDF first"}), 400
@@ -76,13 +78,22 @@ def ask():
 
     retrieved_chunks = vector_store.search(query_embedding, top_k=3)
 
-    answer = generate_answer(question, retrieved_chunks)
+    answer = generate_answer(question, retrieved_chunks, chat_history)
+
+    chat_history.append({"question": question, "answer": answer})
 
     return jsonify({
         "question": question,
         "answer": answer,
         "retrieved_chunks": retrieved_chunks
     })
+
+
+@app.route("/clear-chat", methods=["POST"])
+def clear_chat():
+    global chat_history
+    chat_history = []
+    return jsonify({"message": "Chat history cleared"})
 
 
 if __name__ == "__main__":
