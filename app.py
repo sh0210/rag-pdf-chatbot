@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from utils.pdf_processor import extract_text_from_pdf
 from utils.chunker import chunk_text
+from utils.embeddings import get_embeddings_for_chunks
 
 app = Flask(__name__)
 
@@ -28,12 +29,20 @@ def upload():
 
     chunks = chunk_text(text)
 
+    if not chunks:
+        return jsonify({"error": "No chunks produced from this document"}), 400
+
+    embedded_chunks = get_embeddings_for_chunks(chunks)
+
+    if not embedded_chunks:
+        return jsonify({"error": "Embedding generation failed for all chunks"}), 500
+
     return jsonify({
-        "message": "PDF processed successfully",
+        "message": "PDF processed and embedded successfully",
         "char_count": len(text),
         "num_chunks": len(chunks),
-        "first_chunk_preview": chunks[0][:200] if chunks else "",
-        "second_chunk_preview": chunks[1][:200] if len(chunks) > 1 else ""
+        "num_embedded": len(embedded_chunks),
+        "embedding_dimension": len(embedded_chunks[0][1])
     })
 
 if __name__ == "__main__":

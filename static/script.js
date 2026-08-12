@@ -21,7 +21,7 @@ document.getElementById("upload-btn").addEventListener("click", async () => {
         console.log(data);
 
         if (response.ok) {
-    statusEl.innerText = `Extracted ${data.char_count} chars, split into ${data.num_chunks} chunks. Chunk 1: "${data.first_chunk_preview}"`;
+    statusEl.innerText = `Embedded ${data.num_embedded}/${data.num_chunks} chunks. Vector dimension: ${data.embedding_dimension}`;
 } else {
     statusEl.innerText = `Error: ${data.error}`;
 }

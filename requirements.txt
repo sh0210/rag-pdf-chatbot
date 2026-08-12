@@ -1,2 +1,4 @@
 flask
 pypdf
+google-genai
+python-dotenv
