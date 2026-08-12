@@ -1,3 +1,24 @@
+const chatHistory = document.getElementById("chat-history");
+
+function addMessage(question, answer, isError = false) {
+    const msgEl = document.createElement("div");
+    msgEl.className = "chat-message";
+
+    const qEl = document.createElement("div");
+    qEl.className = "chat-question";
+    qEl.innerText = `You: ${question}`;
+
+    const aEl = document.createElement("div");
+    aEl.className = isError ? "chat-answer chat-error" : "chat-answer";
+    aEl.innerText = answer;
+
+    msgEl.appendChild(qEl);
+    msgEl.appendChild(aEl);
+    chatHistory.appendChild(msgEl);
+
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
 document.getElementById("upload-btn").addEventListener("click", async () => {
     const fileInput = document.getElementById("pdf-file");
     const statusEl = document.getElementById("upload-status");
@@ -30,16 +51,21 @@ document.getElementById("upload-btn").addEventListener("click", async () => {
     }
 });
 
-document.getElementById("ask-btn").addEventListener("click", async () => {
-    const question = document.getElementById("question-input").value.trim();
-    const answerEl = document.getElementById("answer-output");
+async function askQuestion() {
+    const input = document.getElementById("question-input");
+    const question = input.value.trim();
 
     if (!question) {
-        answerEl.innerText = "Please type a question.";
         return;
     }
 
-    answerEl.innerText = "Thinking...";
+    input.value = "";
+
+    const loadingEl = document.createElement("div");
+    loadingEl.className = "chat-loading";
+    loadingEl.innerText = "Thinking...";
+    chatHistory.appendChild(loadingEl);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
 
     try {
         const response = await fetch("/ask", {
@@ -49,13 +75,28 @@ document.getElementById("ask-btn").addEventListener("click", async () => {
         });
         const data = await response.json();
 
+        loadingEl.remove();
+
         if (response.ok) {
-            answerEl.innerText = data.answer;
+            addMessage(question, data.answer);
         } else {
-            answerEl.innerText = `Error: ${data.error}`;
+            addMessage(question, `Error: ${data.error}`, true);
         }
     } catch (err) {
-        answerEl.innerText = "Something went wrong. Check console.";
+        loadingEl.remove();
+        addMessage(question, "Something went wrong. Check console.", true);
         console.error(err);
     }
+}
+
+document.getElementById("ask-btn").addEventListener("click", askQuestion);
+
+document.getElementById("question-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        askQuestion();
+    }
+});
+
+document.getElementById("clear-btn").addEventListener("click", () => {
+    chatHistory.innerHTML = "";
 });

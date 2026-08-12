@@ -15,15 +15,16 @@
         <p id="upload-status"></p>
     </div>
 
-    <div class="question-section">
-        <h3>2. Ask a question</h3>
-        <input type="text" id="question-input" placeholder="Ask something about the PDF...">
-        <button id="ask-btn">Ask</button>
-    </div>
-
-    <div class="answer-section">
-        <h3>Answer</h3>
-        <p id="answer-output">Answer will appear here.</p>
+    <div class="chat-section">
+        <div class="chat-header">
+            <h3>2. Chat about the document</h3>
+            <button id="clear-btn">Clear chat</button>
+        </div>
+        <div id="chat-history"></div>
+        <div class="chat-input-row">
+            <input type="text" id="question-input" placeholder="Ask something about the PDF...">
+            <button id="ask-btn">Ask</button>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
