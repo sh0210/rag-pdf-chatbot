@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, jsonify
 from utils.pdf_processor import extract_text_from_pdf
 from utils.chunker import chunk_text
@@ -97,4 +98,5 @@ def clear_chat():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
