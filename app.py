@@ -76,7 +76,7 @@ def ask():
     if query_embedding is None:
         return jsonify({"error": "Failed to process your question"}), 500
 
-    retrieved_chunks = vector_store.search(query_embedding, top_k=3)
+    retrieved_chunks = vector_store.search(query_embedding, top_k=5)
 
     answer = generate_answer(question, retrieved_chunks, chat_history)
 
