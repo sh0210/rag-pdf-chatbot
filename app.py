@@ -45,10 +45,12 @@ def upload():
     if not embedded_chunks:
         return jsonify({"error": "Embedding generation failed for all chunks"}), 500
 
+    vector_store = None  # release old FAISS index and embeddings from memory first
+    chat_history = []
+
     dimension = len(embedded_chunks[0][1])
     vector_store = VectorStore(dimension)
     vector_store.add_chunks(embedded_chunks)
-    chat_history = []  # reset conversation when a new document is uploaded
 
     return jsonify({
         "message": "PDF processed, embedded, and stored successfully",
